@@ -13,7 +13,11 @@ jobs:
           POSTGRES_USER: worklens
           POSTGRES_PASSWORD: ci-only-synthetic-database
         ports: ['5432:5432']
-        options: --health-cmd 'pg_isready -U worklens' --health-interval 5s --health-retries 10
+        options: >-
+          --health-cmd "pg_isready -U worklens -d worklens_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       DEBUG: '1'
       POSTGRES_HOST: 127.0.0.1
