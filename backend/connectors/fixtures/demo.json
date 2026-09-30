@@ -1,0 +1,37 @@
+[
+  {
+    "external_id": "DEMO-101", "kind": "work_item", "scope": "DEMO",
+    "title": "Deliver accessible account recovery", "url": "https://jira.example.invalid/browse/DEMO-101",
+    "occurred_at": "2026-08-04T09:00:00Z", "updated_at": "2026-08-14T14:00:00Z",
+    "account_id": "demo-alex", "email": "alex@example.test", "deleted": false,
+    "data": {"status": "Done", "work_type": "Feature", "due_date": "2026-08-15", "started_at": "2026-08-06T09:00:00Z", "completed_at": "2026-08-14T14:00:00Z", "priority": "High", "labels": ["accessibility", "frontend"], "shared_with": ["demo-sam"], "contribution_kind": "shared_delivery"}
+  },
+  {
+    "external_id": "DEMO-102", "kind": "work_item", "scope": "DEMO",
+    "title": "Add event delivery retry policy", "url": "https://jira.example.invalid/browse/DEMO-102",
+    "occurred_at": "2026-08-11T09:00:00Z", "updated_at": "2026-08-24T11:00:00Z",
+    "account_id": "demo-sam", "email": "sam@example.test", "deleted": false,
+    "data": {"status": "Done", "work_type": "Feature", "due_date": "2026-08-21", "started_at": "2026-08-13T09:00:00Z", "completed_at": "2026-08-24T11:00:00Z", "priority": "Medium", "dependencies": [{"relationship": "blocked by", "inward": "DEMO-100", "outward": ""}], "contribution_kind": "delivery"}
+  },
+  {
+    "external_id": "demo/worklens:42", "kind": "pull_request", "scope": "DEMO",
+    "title": "Review keyboard interaction and error states", "url": "https://bitbucket.example.invalid/demo/worklens/pull-requests/42",
+    "occurred_at": "2026-08-12T10:00:00Z", "updated_at": "2026-08-14T12:00:00Z",
+    "account_id": "demo-alex", "email": "alex@example.test", "deleted": false,
+    "data": {"status": "MERGED", "reviewers": [{"account_id": "demo-sam", "email": "sam@example.test"}], "approvals": [{"account_id": "demo-sam", "approved": true, "at": "2026-08-14T10:00:00Z"}], "merge": {"merged": true, "commit": "abc123synthetic"}, "contribution_kind": "review"}
+  },
+  {
+    "external_id": "page-501", "kind": "document", "scope": "DEMO",
+    "title": "Recovery accessibility review guide", "url": "https://docs.example.invalid/pages/501",
+    "occurred_at": "2026-08-18T09:00:00Z", "updated_at": "2026-08-20T12:00:00Z",
+    "account_id": "demo-alex", "email": "alex@example.test", "deleted": false,
+    "data": {"version": {"number": 3, "at": "2026-08-20T12:00:00Z"}, "ownership": {"account_id": "demo-alex"}, "reviews": [{"reviewer_account_id": "demo-sam", "reviewed_at": "2026-08-21T12:00:00Z", "verdict": "accepted", "evidence_url": "https://docs.example.invalid/pages/501"}], "contribution_kind": "documentation"}
+  },
+  {
+    "external_id": "DEMO-103", "kind": "work_item", "scope": "DEMO",
+    "title": "Record service account evidence without attributing it to a person", "url": "https://jira.example.invalid/browse/DEMO-103",
+    "occurred_at": "2026-08-25T09:00:00Z", "updated_at": "2026-08-26T09:00:00Z",
+    "account_id": "demo-buildbot", "email": "buildbot@example.test", "deleted": false,
+    "data": {"status": "In Progress", "work_type": "Maintenance", "due_date": null, "contribution_kind": "observation"}
+  }
+]

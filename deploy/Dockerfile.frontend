@@ -1,0 +1,16 @@
+ARG NODE_IMAGE=node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+ARG NGINX_IMAGE=nginx:stable-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
+FROM ${NODE_IMAGE} AS build
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+COPY frontend ./
+RUN npm run build
+FROM ${NGINX_IMAGE}
+RUN apk add --no-cache iptables=1.8.13-r0 setpriv=2.42.3-r1
+COPY deploy/nginx.conf /etc/nginx/nginx.conf
+COPY deploy/web-entrypoint.sh /usr/local/bin/worklens-web
+RUN chmod 755 /usr/local/bin/worklens-web
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 8443
+ENTRYPOINT ["/usr/local/bin/worklens-web"]

@@ -1,0 +1,22 @@
+# Explicit opt-in network gateway. Configure both application origins and Squid
+# exact host/IP allowlists before enabling. No services gain a direct route.
+services:
+  api:
+    environment:
+      WORKLENS_EGRESS_PROXY: http://egress-proxy:3128
+  worker:
+    environment:
+      WORKLENS_EGRESS_PROXY: http://egress-proxy:3128
+  egress-proxy:
+    image: ubuntu/squid:latest@sha256:6a097f68bae708cedbabd6188d68c7e2e7a38cedd05a176e1cc0ba29e3bbe029
+    entrypoint: [squid, -N, -f, /etc/squid/squid.conf]
+    volumes:
+      - ./deploy/squid.conf:/etc/squid/squid.conf:ro
+      - ./deploy/allowed-hosts.txt:/etc/squid/allowed-hosts.txt:ro
+      - ./deploy/allowed-internal-cidrs.txt:/etc/squid/allowed-internal-cidrs.txt:ro
+    networks: [internal, gateway]
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+networks:
+  gateway: {}

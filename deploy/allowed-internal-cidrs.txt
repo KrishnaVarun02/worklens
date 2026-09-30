@@ -1,0 +1,3 @@
+# Reserved documentation address, intentionally not an internal deployment.
+# Add only explicitly approved internal source-service destination CIDRs here.
+192.0.2.0/32

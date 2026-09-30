@@ -1,0 +1,3 @@
+# Exact hostnames only, without leading dots, schemes, or paths.
+# Replace this reserved non-resolving name locally with approved endpoints.
+worklens-deny.invalid

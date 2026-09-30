@@ -1,0 +1,7 @@
+Django==5.2.17
+djangorestframework==3.18.1
+cryptography==50.0.1
+psycopg[binary]==3.3.6
+gunicorn==26.2.0
+reportlab==5.0.1
+requests==2.34.2

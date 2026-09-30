@@ -1,0 +1,78 @@
+name: worklens
+services:
+  db:
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-worklens}
+      POSTGRES_USER: ${POSTGRES_USER:-worklens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong database password in .env}
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+  api:
+    image: worklens-api:1.0.0
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    env_file: .env
+    environment:
+      DEBUG: '0'
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Generate a secret locally}
+      WORKLENS_ENCRYPTION_KEY: ${WORKLENS_ENCRYPTION_KEY:?Generate an encryption key locally}
+      POSTGRES_HOST: db
+    networks: [internal]
+    volumes:
+      - static:/app/staticfiles:ro
+    tmpfs: [/tmp]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      db: {condition: service_healthy}
+    restart: unless-stopped
+  worker:
+    image: worklens-api:1.0.0
+    command: [python, manage.py, run_worker]
+    env_file: .env
+    environment:
+      DEBUG: '0'
+      POSTGRES_HOST: db
+    networks: [internal]
+    tmpfs: [/tmp]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      db: {condition: service_healthy}
+    restart: unless-stopped
+  web:
+    image: worklens-web:1.0.0
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.frontend
+    ports:
+      - '${WORKLENS_BIND:-127.0.0.1}:8443:8443'
+    volumes:
+      - ./certs:/etc/worklens/tls:ro
+      - static:/srv/static:ro
+    networks: [internal, ingress]
+    cap_add: [NET_ADMIN]
+    tmpfs: [/tmp, /var/cache/nginx, /var/run]
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    depends_on: [api]
+    restart: unless-stopped
+networks:
+  ingress: {}
+  internal:
+    internal: true
+volumes:
+  database:
+  static:

@@ -1,0 +1,14 @@
+.git
+.venv
+.env*
+**/node_modules
+**/__pycache__
+**/*.sqlite3*
+frontend/dist
+secrets
+certs
+backups
+work
+test-results
+**/test-results
+**/playwright-report

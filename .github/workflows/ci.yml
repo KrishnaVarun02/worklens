@@ -1,0 +1,65 @@
+name: WorkLens checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+        env:
+          POSTGRES_DB: worklens_test
+          POSTGRES_USER: worklens
+          POSTGRES_PASSWORD: ci-only-synthetic-database
+        ports: ['5432:5432']
+        options: --health-cmd 'pg_isready -U worklens' --health-interval 5s --health-retries 10
+    env:
+      DEBUG: '1'
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_DB: worklens_test
+      POSTGRES_USER: worklens
+      POSTGRES_PASSWORD: ci-only-synthetic-database
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with: {python-version: '3.13', cache: pip}
+      - run: pip install -r requirements.txt
+      - run: python backend/manage.py makemigrations --check --dry-run
+      - run: python backend/manage.py test tests --verbosity 2
+        working-directory: .
+      - run: python -m unittest discover -s scripts -p 'test_*.py' -v
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: {node-version: '22', cache: npm, cache-dependency-path: frontend/package-lock.json}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+  browser:
+    runs-on: ubuntu-latest
+    env:
+      DEBUG: '1'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with: {python-version: '3.13', cache: pip}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: {node-version: '22', cache: npm, cache-dependency-path: frontend/package-lock.json}
+      - run: pip install -r requirements.txt
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: |
+          python backend/manage.py migrate
+          python backend/manage.py seed_demo --password 'WorkLens-demo-2026!'
+          python backend/manage.py runserver 127.0.0.1:8000 --noreload > /tmp/worklens-api.log 2>&1 &
+          python backend/manage.py run_worker > /tmp/worklens-worker.log 2>&1 &
+          npm --prefix frontend run dev > /tmp/worklens-web.log 2>&1 &
+          python -c 'import time,urllib.request; time.sleep(3); urllib.request.urlopen("http://127.0.0.1:8000/api/health/")'
+      - run: npm run test:e2e
+        working-directory: frontend
